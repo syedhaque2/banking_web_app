@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="s-WJOcLhP5oAmZXWNNY5">
+    <mxGraphModel dx="1705" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-16" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="610" width="965" x="102" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-1" parent="z9kn8NPBB3m-PcNedMAl-16" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="" vertex="1">
+          <mxGeometry height="610" width="965" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-2" parent="z9kn8NPBB3m-PcNedMAl-16" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="&lt;div style=&quot;&quot;&gt;Graph&lt;/div&gt;" vertex="1">
+          <mxGeometry height="288.05555555555554" width="405.4621848739496" x="527.1008403361344" y="254.16666666666663" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-5" parent="z9kn8NPBB3m-PcNedMAl-16" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;$Wallet-Value in USD&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;line-height: 18px;&quot;&gt;(Conversions required)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="152.5" width="551.4285714285714" x="40.54621848739495" y="67.77777777777777" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-14" parent="z9kn8NPBB3m-PcNedMAl-16" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="$PNL - %PNL" vertex="1">
+          <mxGeometry height="127.08333333333333" width="316.26050420168065" x="616.3025210084033" y="76.25" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-3" parent="z9kn8NPBB3m-PcNedMAl-16" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="TOKEN 1 eg: &amp;lt;0.5 SOL&amp;gt;" vertex="1">
+          <mxGeometry height="61.61616161616161" width="441.953781512605" x="40.54621848739495" y="261.9966666666666" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-4" parent="z9kn8NPBB3m-PcNedMAl-16" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;aspect=fixed;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="LOGO" vertex="1">
+          <mxGeometry height="47.181054239877774" width="47.181054239877774" x="53.544859120118645" y="269.2182828282828" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-7" parent="z9kn8NPBB3m-PcNedMAl-16" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="TOKEN 2 eg: &amp;lt;0.5 SOL&amp;gt;" vertex="1">
+          <mxGeometry height="61.61616161616161" width="441.953781512605" x="40.54621848739495" y="328.10606060606057" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-8" parent="z9kn8NPBB3m-PcNedMAl-16" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;aspect=fixed;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="LOGO" vertex="1">
+          <mxGeometry height="47.181054239877774" width="47.181054239877774" x="53.544859120118645" y="334.26767676767673" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-9" parent="z9kn8NPBB3m-PcNedMAl-16" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="TOKEN 3 eg: &amp;lt;0.5 SOL&amp;gt;" vertex="1">
+          <mxGeometry height="61.61616161616161" width="441.953781512605" x="40.54621848739495" y="393.41919191919186" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-10" parent="z9kn8NPBB3m-PcNedMAl-16" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="TOKEN 4 eg: &amp;lt;0.5 SOL&amp;gt;" vertex="1">
+          <mxGeometry height="61.61616161616161" width="441.953781512605" x="40.54621848739495" y="463.66161616161617" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-11" parent="z9kn8NPBB3m-PcNedMAl-16" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;aspect=fixed;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="LOGO" vertex="1">
+          <mxGeometry height="47.181054239877774" width="47.181054239877774" x="53.544859120118645" y="399.580808080808" as="geometry" />
+        </mxCell>
+        <mxCell id="z9kn8NPBB3m-PcNedMAl-12" parent="z9kn8NPBB3m-PcNedMAl-16" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;aspect=fixed;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;container=0;" value="LOGO" vertex="1">
+          <mxGeometry height="47.181054239877774" width="47.181054239877774" x="53.544859120118645" y="469.82323232323233" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
