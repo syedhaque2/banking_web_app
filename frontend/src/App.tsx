@@ -1,6 +1,86 @@
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 
 type IconName = "activity" | "arrow-down" | "arrow-up" | "chevron" | "copy" | "grid" | "plus" | "search" | "settings" | "swap" | "wallet" | "x"
+
+type Asset = {
+  name: string
+  symbol: string
+  amount: number
+  value: number
+  change: string
+  color: string
+  mark: string
+}
+
+type ApiAsset = Omit<Asset, "color" | "mark">
+
+const defaultAssets: Asset[] = [
+  {
+    name: "Solana",
+    symbol: "SOL",
+    amount: 132.48,
+    value: 21971.68,
+    change: "+5.21%",
+    color: "from-violet-500 via-fuchsia-400 to-emerald-300",
+    mark: "S",
+  },
+  {
+    name: "USD Coin",
+    symbol: "USDC",
+    amount: 8640,
+    value: 8640,
+    change: "+0.02%",
+    color: "from-blue-500 to-sky-400",
+    mark: "$",
+  },
+  {
+    name: "Jupiter",
+    symbol: "JUP",
+    amount: 6410.32,
+    value: 5320.57,
+    change: "-2.18%",
+    color: "from-emerald-400 to-cyan-500",
+    mark: "J",
+  },
+  {
+    name: "Render",
+    symbol: "RNDR",
+    amount: 832.09,
+    value: 4316.62,
+    change: "+8.47%",
+    color: "from-red-500 to-orange-400",
+    mark: "R",
+  },
+]
+
+const assetStyles: Record<string, Pick<Asset, "color" | "mark">> = {
+  ...Object.fromEntries(
+    defaultAssets.map(({ symbol, color, mark }) => [
+      symbol,
+      { color, mark },
+    ]),
+  ),
+  RAY: { color: "from-sky-500 to-blue-700", mark: "R" },
+  BONK: { color: "from-orange-400 to-amber-600", mark: "B" },
+  USDT: { color: "from-emerald-500 to-teal-700", mark: "T" },
+}
+
+function isApiAsset(value: unknown): value is ApiAsset {
+  if (typeof value !== "object" || value === null) {
+    return false
+  }
+
+  const asset = value as Record<string, unknown>
+  return (
+    typeof asset.name === "string" &&
+    typeof asset.symbol === "string" &&
+    typeof asset.amount === "number" &&
+    Number.isFinite(asset.amount) &&
+    typeof asset.value === "number" &&
+    Number.isFinite(asset.value) &&
+    typeof asset.change === "string"
+  )
+}
 
 function Icon({
   name,
@@ -115,48 +195,6 @@ function Button({
     </button>
   )
 }
-
-const assets = [
-  {
-    name: "Solana",
-    symbol: "SOL",
-    amount: "132.48",
-    value: 21971.68,
-    change: "+5.21%",
-    color: "from-violet-500 via-fuchsia-400 to-emerald-300",
-    mark: "S",
-  },
-  {
-    name: "USD Coin",
-    symbol: "USDC",
-    amount: "8,640.00",
-    value: 8640,
-    change: "+0.02%",
-    color: "from-blue-500 to-sky-400",
-    mark: "$",
-  },
-  {
-    name: "Jupiter",
-    symbol: "JUP",
-    amount: "6,410.32",
-    value: 5320.57,
-    change: "-2.18%",
-    color: "from-emerald-400 to-cyan-500",
-    mark: "J",
-  },
-  {
-    name: "Render",
-    symbol: "RNDR",
-    amount: "832.09",
-    value: 4316.62,
-    change: "+8.47%",
-    color: "from-red-500 to-orange-400",
-    mark: "R",
-  },
-]
-
-const usdTotal = 48240.16
-const solPrice = 165.85
 
 function Chart({ currency }: { currency: "USD" | "SOL" }) {
   return (
@@ -331,9 +369,44 @@ function TransactionModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function App() {
+  const [assets, setAssets] = useState<Asset[]>(defaultAssets)
   const [currency, setCurrency] = useState<"USD" | "SOL">("USD")
   const [range, setRange] = useState("1M")
   const [modalOpen, setModalOpen] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Wallet API request failed with status ${res.status}.`)
+        }
+        return res.json()
+      })
+      .then((data: unknown) => {
+        if (!Array.isArray(data) || !data.every(isApiAsset)) {
+          throw new Error("Wallet API returned an invalid asset list.")
+        }
+
+        setAssets(
+          data.map((asset) => ({
+            ...asset,
+            color:
+              assetStyles[asset.symbol]?.color ??
+              "from-slate-500 to-slate-700",
+            mark: assetStyles[asset.symbol]?.mark ?? asset.symbol.slice(0, 1),
+          })),
+        )
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load wallet assets from the API.", error)
+        setAssets(defaultAssets)
+      })
+  }, [])
+
+  const usdTotal = assets.reduce((total, asset) => total + asset.value, 0)
+  const solAsset = assets.find((asset) => asset.symbol === "SOL")
+  const solPrice =
+    solAsset && solAsset.amount > 0 ? solAsset.value / solAsset.amount : 165.85
   const total =
     currency === "USD"
       ? `$${usdTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
@@ -488,7 +561,7 @@ export default function App() {
                 <div>
                   <div className="text-lg font-semibold">Your assets</div>
                   <div className="mt-1 text-sm text-slate-400">
-                    4 assets in this wallet
+                    {assets.length} assets in this wallet
                   </div>
                 </div>
                 <Button className="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
@@ -525,7 +598,10 @@ export default function App() {
                     </div>
                     <div className="hidden md:block">
                       <div className="text-sm font-semibold">
-                        {asset.amount}
+                        {asset.amount.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 8,
+                        })}
                       </div>
                       <div className="mt-0.5 text-xs text-slate-400">
                         {asset.symbol}
@@ -534,7 +610,7 @@ export default function App() {
                     <div className="hidden text-sm font-medium md:block">
                       $
                       {(
-                        asset.value / Number(asset.amount.replace(",", ""))
+                        asset.amount > 0 ? asset.value / asset.amount : 0
                       ).toFixed(2)}
                     </div>
                     <div
