@@ -375,7 +375,7 @@ export default function App() {
   const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
-    fetch("/api/")
+    fetch("/api/tokens")
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Wallet API request failed with status ${res.status}.`)
