@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import sqlite3 as sqlite3
+from pathlib import Path
+import sqlite3
 
 app = FastAPI(
     title="Crypto Wallet API",
@@ -16,18 +17,23 @@ app.add_middleware(
 
 @app.get("/")
 def wallet_tokens():
-    sqlConnection = sqlite3.connect("mock_solana_wallet.db")
-    sqlConnection.row_factory = sqlite3.Row
-    cursor = sqlConnection.cursor()
-    cursor.execute("SELECT symbol, name, balance, value_usd, change_24h_pct FROM v_portfolio WHERE wallet_address = 'h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU'")
-    rows = cursor.fetchall()
-    sqlConnection.close()
+    database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
+    with sqlite3.connect(database_path) as connection:
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT symbol, name, balance, value_usd, change_24h_pct "
+            "FROM v_portfolio "
+            "WHERE wallet_address = ?",
+            ("h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU",),
+        )
+        rows = cursor.fetchall()
 
     return [
         {
             "name": r["name"],
             "symbol": r["symbol"],
-            "amount": f"{r['balance']:,.2f}",
+            "amount": r["balance"],
             "value": round(r["value_usd"], 2),
             "change": f"{r['change_24h_pct']:+.2f}%",
         }
