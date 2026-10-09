@@ -1,21 +1,5 @@
 import sqlite3 as sql
 
-
-
-sqlConnection = sql.connect("crypto_wallets.db")
-
-cursor = sqlConnection.cursor()
-
-statement = "SELECT * FROM crypto_wallets"
-
-cursor.execute(statement)
-
-results = cursor.fetchall()
-
-print(results)
-
-sqlConnection.close()
-
 def transaction(senderID, receiverID, amount, gasfee):
     try:
         sqlConnection = sql.connect("crypto_wallets.db")
@@ -47,7 +31,7 @@ def transaction(senderID, receiverID, amount, gasfee):
         sqlConnection.close()
 
 def get_wallet_tokens():
-    
+
     sqlConnection = sql.connect("mock_solana_wallet.db")
     sqlConnection.row_factory = sql.Row
     cursor = sqlConnection.cursor()
