@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from contextlib import closing
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import sqlite3
@@ -15,10 +16,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+@app.get("/tokens")
 def wallet_tokens():
     database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
-    with sqlite3.connect(database_path) as connection:
+    with closing(sqlite3.connect(database_path)) as connection:
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         cursor.execute(
@@ -39,3 +40,21 @@ def wallet_tokens():
         }
         for r in rows
     ]
+
+    
+@app.get("/")
+def wallet_selection():
+    database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
+    with closing(sqlite3.connect(database_path)) as connection:
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT wallet_address FROM v_portfolio WHERE wallet_address = ?",
+            ("h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU",))
+        result = cursor.fetchone()
+
+    if result is None:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+
+    return {"wallet_address": result["wallet_address"]}
+    
