@@ -42,8 +42,8 @@ def wallet_tokens():
     ]
 
     
-@app.get("/")
-def wallet_selection():
+@app.get("/wallet")
+def wallet_address():
     database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
     with closing(sqlite3.connect(database_path)) as connection:
         connection.row_factory = sqlite3.Row

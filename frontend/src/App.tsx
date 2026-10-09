@@ -373,6 +373,7 @@ export default function App() {
   const [currency, setCurrency] = useState<"USD" | "SOL">("USD")
   const [range, setRange] = useState("1M")
   const [modalOpen, setModalOpen] = useState(false)
+  const [walletAddress, setWalletAddress] = useState("Loading wallet...")
 
   useEffect(() => {
     fetch("/api/tokens")
@@ -401,6 +402,33 @@ export default function App() {
         console.error("Failed to load wallet assets from the API.", error)
         setAssets(defaultAssets)
       })
+
+    fetch("/api/wallet")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Wallet address request failed with status ${res.status}.`)
+        }
+        return res.json()
+      })
+      .then((data: unknown) => {
+        const address =
+          typeof data === "string"
+            ? data
+            : typeof data === "object" && data !== null
+              ? (data as Record<string, unknown>).wallet_address ??
+                (data as Record<string, unknown>).walletAddress
+              : undefined
+
+        if (typeof address !== "string") {
+          throw new Error("Wallet API returned an invalid wallet address.")
+        }
+
+        setWalletAddress(address)
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load wallet address from the API.", error)
+        setWalletAddress("Wallet unavailable")
+      })
   }, [])
 
   const usdTotal = assets.reduce((total, asset) => total + asset.value, 0)
@@ -411,7 +439,6 @@ export default function App() {
     currency === "USD"
       ? `$${usdTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
       : `${(usdTotal / solPrice).toFixed(2)} SOL`
-
   return (
     <div className="min-h-screen bg-slate-100 p-3 text-slate-950 sm:p-5 lg:p-7">
       <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-screen-2xl overflow-hidden rounded-3xl border border-white/80 bg-[var(--surface)] shadow-xl shadow-slate-300/40">
@@ -492,7 +519,7 @@ export default function App() {
               </div>
               <Button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
                 <span className="size-2 rounded-full bg-emerald-500" />
-                7xP9...kR2m
+                {walletAddress}
                 <Icon name="chevron" className="size-3 rotate-90" />
               </Button>
             </div>
