@@ -1,9 +1,6 @@
 import sqlite3 as sql
-import os
 
-from banking_web_app.app.calculations import increase, deduction
 
-print(os.getcwd())
 
 sqlConnection = sql.connect("crypto_wallets.db")
 
@@ -48,3 +45,14 @@ def transaction(senderID, receiverID, amount, gasfee):
         print(e)
     finally:
         sqlConnection.close()
+
+def get_wallet_tokens():
+    
+    sqlConnection = sql.connect("mock_solana_wallet.db")
+    sqlConnection.row_factory = sql.Row
+    cursor = sqlConnection.cursor()
+    cursor.execute(f"SELECT symbol, name, balance FROM v_portfolio WHERE wallet_address = h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU")
+    rows = cursor.fetchall()
+    print([dict(r) for r in rows])
+        
+    sqlConnection.close()
