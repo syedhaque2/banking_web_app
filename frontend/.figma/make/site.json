@@ -1,0 +1,10 @@
+{
+  "description": "Manage your crypto assets effortlessly with a wallet overview, real-time value graphs, and easy transaction initiation in USD and Solana.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
