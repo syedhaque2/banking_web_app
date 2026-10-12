@@ -179,16 +179,19 @@ function Button({
   className = "",
   onClick,
   type = "button",
+  disabled = false,
 }: {
   children: ReactNode
   className?: string
   onClick?: () => void
   type?: "button" | "submit"
+  disabled?: boolean
 }) {
   return (
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className={`cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${className}`}
     >
       {children}
@@ -255,8 +258,17 @@ function Chart({ currency }: { currency: "USD" | "SOL" }) {
   )
 }
 
-function TransactionModal({ onClose }: { onClose: () => void }) {
+function TransactionModal({
+  assets,
+  onClose,
+}: {
+  assets: Asset[]
+  onClose: () => void
+}) {
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState("")
+  const [selectedToken, setSelectedToken] = useState(assets[0]?.symbol ?? "")
 
   return (
     <div
@@ -272,11 +284,10 @@ function TransactionModal({ onClose }: { onClose: () => void }) {
               <Icon name="arrow-up" className="size-7" />
             </div>
             <div className="text-2xl font-semibold tracking-tight text-slate-950">
-              Transaction initiated
+              Transfer successful
             </div>
             <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
-              Your transaction was submitted to the Solana network and is
-              awaiting confirmation.
+              The transfer was accepted by the wallet API.
             </p>
             <Button
               onClick={onClose}
@@ -305,19 +316,74 @@ function TransactionModal({ onClose }: { onClose: () => void }) {
             </div>
             <form
               className="mt-7 space-y-5"
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault()
-                setSent(true)
+                setError("")
+                const formData = new FormData(event.currentTarget)
+                const recipientAddress = String(
+                  formData.get("recipientAddress") ?? "",
+                )
+                const amount = Number(formData.get("amount"))
+                const token = String(formData.get("token") ?? "")
+
+                setSending(true)
+                try {
+                  const query = new URLSearchParams({
+                    targetaddress: recipientAddress,
+                    amount: String(amount),
+                    token,
+                  })
+                  const response = await fetch(`/api/send?${query}`, {
+                    method: "POST",
+                  })
+                  if (!response.ok) {
+                    const responseBody = await response.text()
+                    let result: unknown
+                    try {
+                      result = JSON.parse(responseBody)
+                    } catch {
+                      throw new Error(
+                        responseBody ||
+                          `Transfer failed with status ${response.status}.`,
+                      )
+                    }
+                    const detail =
+                      typeof result === "object" &&
+                      result !== null &&
+                      "detail" in result &&
+                      typeof result.detail === "string"
+                        ? result.detail
+                        : `Transfer failed with status ${response.status}.`
+                    throw new Error(detail)
+                  }
+                  setSent(true)
+                } catch (requestError) {
+                  setError(
+                    requestError instanceof Error
+                      ? requestError.message
+                      : "Transfer failed. Please try again.",
+                  )
+                } finally {
+                  setSending(false)
+                }
               }}
             >
               <label className="block">
                 <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Asset
                 </span>
-                <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500">
-                  <option>Solana (SOL)</option>
-                  <option>USD Coin (USDC)</option>
-                  <option>Jupiter (JUP)</option>
+                <select
+                  name="token"
+                  required
+                  value={selectedToken}
+                  onChange={(event) => setSelectedToken(event.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500"
+                >
+                  {assets.map((asset) => (
+                    <option key={asset.symbol} value={asset.symbol}>
+                      {asset.name} ({asset.symbol})
+                    </option>
+                  ))}
                 </select>
               </label>
               <label className="block">
@@ -325,6 +391,7 @@ function TransactionModal({ onClose }: { onClose: () => void }) {
                   Recipient address
                 </span>
                 <input
+                  name="recipientAddress"
                   required
                   placeholder="Solana wallet address"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-500"
@@ -336,6 +403,7 @@ function TransactionModal({ onClose }: { onClose: () => void }) {
                 </span>
                 <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-4 focus-within:border-indigo-500">
                   <input
+                    name="amount"
                     required
                     type="number"
                     min="0"
@@ -344,10 +412,15 @@ function TransactionModal({ onClose }: { onClose: () => void }) {
                     className="min-w-0 flex-1 bg-transparent py-3 text-lg font-semibold text-slate-950 outline-none placeholder:text-slate-300"
                   />
                   <span className="text-sm font-semibold text-slate-500">
-                    SOL
+                    {selectedToken}
                   </span>
                 </div>
               </label>
+              {error && (
+                <p role="alert" className="text-sm text-rose-600">
+                  {error}
+                </p>
+              )}
               <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm">
                 <span className="text-slate-500">Network fee</span>
                 <span className="font-semibold text-slate-800">
@@ -356,9 +429,10 @@ function TransactionModal({ onClose }: { onClose: () => void }) {
               </div>
               <Button
                 type="submit"
-                className="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700"
+                disabled={sending}
+                className="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Review transaction
+                {sending ? "Sending..." : "Send transaction"}
               </Button>
             </form>
           </>
@@ -667,7 +741,12 @@ export default function App() {
           </div>
         </main>
       </div>
-      {modalOpen && <TransactionModal onClose={() => setModalOpen(false)} />}
+      {modalOpen && (
+        <TransactionModal
+          assets={assets}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   )
 }
