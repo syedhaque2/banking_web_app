@@ -11,10 +11,12 @@
 
 Cryptocurrency Wallet App
 
-- Tables needed in database:
-    * Wallets: <u>address</u>, transactions, balance, 
-    * Transactions : <u>transactionID</u>, senderaddress, recipientaddress, tokensent, amountsent, gasfee
-    * Tokens: <u>ticker</u>, price, marketcap, supply
+- Current database schema (`mock_solana_wallet.db`):
+    * `wallets`: `address` (primary key), `label`, `is_active`, `created_at`
+    * `token_accounts`: `id` (primary key), `wallet_address` (wallet reference), `mint` (token reference), `token_account`, `balance_raw`; each wallet has at most one account per token
+    * `tokens`: `mint` (primary key), `symbol`, `name`, `decimals`, `logo_url`, `price_usd`, `change_24h_pct`
+    * `transactions`: `signature` (primary key), `wallet_address`, `type` (`send`, `receive`, `swap`, or `stake`), `mint`, `amount_raw`, `counterparty`, optional `swap_to_mint` and `swap_to_amount_raw`, `fee_lamports`, `status` (`confirmed`, `pending`, or `failed`), `slot`, `block_time`
+    * `v_portfolio` (view): joins token accounts with token metadata and calculates human-readable balance and USD value; it is derived/read-only, not a table
 - Does not have to be extenisve
 - Functionally the website should allow a user to:
     * Make transfers
@@ -39,14 +41,14 @@ User selects an amount to transfer and the following occurs:
 - pnpm
 
 ### To start the backend the following script should be run:
-(from the banking_web_app directory)
-python -m pip install -r requirements.txt
+(from the banking_web_app directory)  
+python -m pip install -r requirements.txt  
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 ### To start the frontend the following script should be run:
-(from the banking_web_app/frontend directory)
-npm install --global pnpm
-pnpm install --frozen-lockfile
+(from the banking_web_app/frontend directory)  
+npm install --global pnpm  
+pnpm install --frozen-lockfile  
 pnpm dev
 
 ### Issues that may be faced:
