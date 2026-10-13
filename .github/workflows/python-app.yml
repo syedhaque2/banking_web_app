@@ -9,9 +9,10 @@ on:
       - "main" 
   pull_request:
     branches: 
-      -"main" 
+      - "main" 
     paths:
       - "banking_web_app/app/main.py" 
+  workflow_dispatch:
 
 permissions:
   contents: read
