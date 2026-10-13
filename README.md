@@ -1,5 +1,44 @@
 # wallet_web_app
 
+## Quick-Start Guide
+### To run the program a developer will need:
+- node
+- python
+- pnpm
+
+### To start the backend the following script should be run:
+(from the banking_web_app directory)  
+```python -m pip install -r requirements.txt```  
+```python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000```
+
+### View wallet addresses for transfers
+The send endpoint only transfers to a wallet already registered in the local database, and the recipient must have an account for the selected token. From the `banking_web_app` directory, open the database with:
+```text
+sqlite3 mock_solana_wallet.db
+```
+At the SQLite prompt, list registered wallet addresses:
+```sql
+SELECT address, label FROM wallets;
+```
+To see which tokens each wallet can receive:
+```sql
+SELECT w.address, w.label, t.symbol
+FROM wallets AS w
+JOIN token_accounts AS ta ON ta.wallet_address = w.address
+JOIN tokens AS t ON t.mint = ta.mint
+ORDER BY w.label, t.symbol;
+```
+Enter `.quit` to exit SQLite. Use a listed address that has an account for the token you are sending.
+
+### To start the frontend the following script should be run:
+(from the banking_web_app/frontend directory)  
+```npm install --global pnpm```  
+```pnpm install --frozen-lockfile```  
+```pnpm dev```
+
+### Issues that may be faced:
+Currently the way Vite is configured, port 5173 has strcitPort set to 'True' so if the port is busy the program will not work. The /api proxy is set to 8000 so a similar issue will occur if the port is in use. In this instance, vite.config.js must be edited so a different port can be selected. The static port selections are currently in place for testing and prototyping. 
+
 ## Project
 
 - How an API works (FastAPI)
@@ -33,23 +72,3 @@ User selects an amount to transfer and the following occurs:
 - POST https://bank.com/transfer {from:123, to: 456, amount: £20}
 - Current wallet = GET /balance
 - Shows transactions
-
-## Quick-Start Guide
-### To run the program a developer will need:
-- node
-- python
-- pnpm
-
-### To start the backend the following script should be run:
-(from the banking_web_app directory)  
-python -m pip install -r requirements.txt  
-python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-
-### To start the frontend the following script should be run:
-(from the banking_web_app/frontend directory)  
-npm install --global pnpm  
-pnpm install --frozen-lockfile  
-pnpm dev
-
-### Issues that may be faced:
-Currently the way Vite is configured, port 5173 has strcitPort set to 'True' so if the port is busy the program will not work. The /api proxy is set to 8000 so a similar issue will occur if the port is in use. In this instance, vite.config.js must be edited so a different port can be selected. The static port selections are currently in place for testing and prototyping. 
