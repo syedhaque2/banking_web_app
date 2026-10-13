@@ -17,10 +17,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+selected_address = "h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU"  
 # endpoint to get list of tokens in wallet, currently hardcoded to a specific wallet
 @app.get("/tokens")
-def wallet_tokens():
+def wallet_tokens(selected_address: str = selected_address):
     database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
     with closing(sqlite3.connect(database_path)) as connection:
         connection.row_factory = sqlite3.Row
@@ -29,7 +29,7 @@ def wallet_tokens():
             "SELECT symbol, name, balance, value_usd, change_24h_pct "
             "FROM v_portfolio "
             "WHERE wallet_address = ?",
-            ("h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU",),
+            (selected_address,),
         )
         rows = cursor.fetchall()
 
@@ -46,14 +46,14 @@ def wallet_tokens():
 
 # endpoint gets wallet address, currently hardcoded so effectively redundant currently   
 @app.get("/wallet")
-def wallet_address():
+def wallet_address(selected_address: str = selected_address):
     database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
     with closing(sqlite3.connect(database_path)) as connection:
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         cursor.execute(
             "SELECT wallet_address FROM v_portfolio WHERE wallet_address = ?",
-            ("h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU",))
+            (selected_address,))
         result = cursor.fetchone()
 
     if result is None:

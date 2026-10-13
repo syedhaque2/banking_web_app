@@ -36,6 +36,10 @@ Enter `.quit` to exit SQLite. Use a listed address that has an account for the t
 ```pnpm install --frozen-lockfile```  
 ```pnpm dev```
 
+### To run basic unit tests for the API
+Run the following command:
+```pytest```
+
 ### Issues that may be faced:
 Currently the way Vite is configured, port 5173 has strcitPort set to 'True' so if the port is busy the program will not work. The /api proxy is set to 8000 so a similar issue will occur if the port is in use. In this instance, vite.config.js must be edited so a different port can be selected. The static port selections are currently in place for testing and prototyping. 
 
