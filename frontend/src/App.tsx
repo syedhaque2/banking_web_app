@@ -14,6 +14,15 @@ type Asset = {
 
 type ApiAsset = Omit<Asset, "color" | "mark">
 
+type ActivityItem = {
+  transaction_id: string
+  timestamp: string
+  amount: number
+  token_symbol: string
+  direction: string
+  status: "confirmed" | "pending" | "failed"
+}
+
 const defaultAssets: Asset[] = [
   {
     name: "Solana",
@@ -79,6 +88,25 @@ function isApiAsset(value: unknown): value is ApiAsset {
     typeof asset.value === "number" &&
     Number.isFinite(asset.value) &&
     typeof asset.change === "string"
+  )
+}
+
+function isActivityItem(value: unknown): value is ActivityItem {
+  if (typeof value !== "object" || value === null) {
+    return false
+  }
+
+  const item = value as Record<string, unknown>
+  return (
+    typeof item.transaction_id === "string" &&
+    typeof item.timestamp === "string" &&
+    typeof item.amount === "number" &&
+    Number.isFinite(item.amount) &&
+    typeof item.token_symbol === "string" &&
+    typeof item.direction === "string" &&
+    (item.status === "confirmed" ||
+      item.status === "pending" ||
+      item.status === "failed")
   )
 }
 
@@ -448,6 +476,12 @@ export default function App() {
   const [range, setRange] = useState("1M")
   const [modalOpen, setModalOpen] = useState(false)
   const [walletAddress, setWalletAddress] = useState("Loading wallet...")
+  const [activeTab, setActiveTab] = useState<"portfolio" | "activity">("portfolio")
+  const [activity, setActivity] = useState<ActivityItem[]>([])
+  const [activityStatus, setActivityStatus] = useState<
+    "idle" | "loading" | "loaded" | "error"
+  >("idle")
+  const [activityError, setActivityError] = useState("")
 
   useEffect(() => {
     fetch("/api/tokens")
@@ -505,6 +539,47 @@ export default function App() {
       })
   }, [])
 
+  useEffect(() => {
+    if (activeTab !== "activity") {
+      return
+    }
+
+    let cancelled = false
+    setActivityStatus("loading")
+    setActivityError("")
+
+    fetch("/api/activity")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Activity request failed with status ${response.status}.`)
+        }
+        return response.json()
+      })
+      .then((data: unknown) => {
+        if (!Array.isArray(data) || !data.every(isActivityItem)) {
+          throw new Error("Activity API returned an invalid transaction list.")
+        }
+        if (!cancelled) {
+          setActivity(data.filter((item) => item.status === "confirmed"))
+          setActivityStatus("loaded")
+        }
+      })
+
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          console.error("Failed to load wallet activity from the API.", error)
+          setActivityError(
+            error instanceof Error ? error.message : "Failed to load activity.",
+          )
+          setActivityStatus("error")
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeTab])
+
   const usdTotal = assets.reduce((total, asset) => total + asset.value, 0)
   const solAsset = assets.find((asset) => asset.symbol === "SOL")
   const solPrice =
@@ -524,7 +599,14 @@ export default function App() {
             <div className="text-lg font-bold tracking-tight">Vertex</div>
           </div>
           <div className="mt-10 space-y-1">
-            <Button className="flex w-full items-center gap-3 rounded-xl bg-indigo-50 px-3 py-3 text-sm font-semibold text-indigo-700">
+            <Button
+              onClick={() => setActiveTab("portfolio")}
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm ${
+                activeTab === "portfolio"
+                  ? "bg-indigo-50 font-semibold text-indigo-700"
+                  : "font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              }`}
+            >
               <Icon name="grid" />
               Portfolio
             </Button>
@@ -532,7 +614,14 @@ export default function App() {
               <Icon name="wallet" />
               Wallets
             </Button>
-            <Button className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900">
+            <Button
+              onClick={() => setActiveTab("activity")}
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm ${
+                activeTab === "activity"
+                  ? "bg-indigo-50 font-semibold text-indigo-700"
+                  : "font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              }`}
+            >
               <Icon name="swap" />
               Activity
             </Button>
@@ -600,6 +689,81 @@ export default function App() {
           </header>
 
           <div className="p-5 sm:p-8">
+            {activeTab === "activity" ? (
+              <section>
+                <div className="mb-6">
+                  <h1 className="text-2xl font-semibold tracking-tight">
+                    Activity
+                  </h1>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Recent transactions for this wallet
+                  </p>
+                </div>
+                <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
+                  {activityStatus === "loading" ? (
+                    <p className="px-6 py-10 text-center text-sm text-slate-500">
+                      Loading activity...
+                    </p>
+                  ) : activityStatus === "error" ? (
+                    <p role="alert" className="px-6 py-10 text-center text-sm text-rose-600">
+                      {activityError}
+                    </p>
+                  ) : activity.length === 0 ? (
+                    <p className="px-6 py-10 text-center text-sm text-slate-500">
+                      No activity found for this wallet.
+                    </p>
+                  ) : (
+                    <>
+                      <div className="hidden grid-cols-[1.5fr_1fr_1fr_1fr] gap-4 border-b border-slate-100 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400 sm:grid">
+                        <span>Transaction</span>
+                        <span>Date</span>
+                        <span>Direction</span>
+                        <span className="text-right">Amount</span>
+                      </div>
+                      {activity.map((item) => {
+                        const sent = item.direction.toLowerCase() === "send"
+                        const date = new Date(item.timestamp)
+                        const formattedDate = Number.isNaN(date.getTime())
+                          ? item.timestamp
+                          : date.toLocaleString()
+
+                        return (
+                          <div
+                            key={item.transaction_id}
+                            className="grid grid-cols-1 gap-2 border-b border-slate-100 px-4 py-4 last:border-0 sm:grid-cols-[1.5fr_1fr_1fr_1fr] sm:items-center sm:gap-4 sm:px-6"
+                          >
+                            <span
+                              className="truncate text-sm font-medium text-slate-700"
+                              title={item.transaction_id}
+                            >
+                              {item.transaction_id}
+                            </span>
+                            <span className="text-sm text-slate-500">
+                              {formattedDate}
+                            </span>
+                            <span
+                              className={`text-sm font-semibold ${
+                                sent ? "text-amber-600" : "text-emerald-600"
+                              }`}
+                            >
+                              {item.direction}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-900 sm:text-right">
+                              {sent ? "−" : "+"}
+                              {item.amount.toLocaleString("en-US", {
+                                maximumFractionDigits: 8,
+                              })}{" "}
+                              {item.token_symbol}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </>
+                  )}
+                </div>
+              </section>
+            ) : (
+              <>
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
               <div>
                 <div className="text-sm font-medium text-slate-500">
@@ -738,6 +902,8 @@ export default function App() {
                 ))}
               </div>
             </section>
+              </>
+            )}
           </div>
         </main>
       </div>

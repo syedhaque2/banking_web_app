@@ -133,3 +133,34 @@ def transfer_funds(targetaddress: str, amount: Decimal, token: str):
         connection.commit()
 
     return {"message": f"Successfully transferred {amount} {token} to {targetaddress}"}
+
+@app.get("/activity")
+def wallet_activity():
+    database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
+    with closing(sqlite3.connect(database_path)) as connection:
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT tr.signature AS transaction_id, "
+            "datetime(tr.block_time, 'unixepoch') AS timestamp, "
+            "tr.amount_raw, t.decimals, "
+            "t.symbol AS token_symbol, tr.type AS direction, tr.status "
+            "FROM transactions AS tr "
+            "JOIN tokens AS t ON t.mint = tr.mint "
+            "WHERE tr.wallet_address = ? "
+            "ORDER BY tr.block_time DESC",
+            ("h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU",),
+        )
+        rows = cursor.fetchall()
+
+    return [
+        {
+            "transaction_id": r["transaction_id"],
+            "timestamp": r["timestamp"],
+            "amount": r["amount_raw"] / (10 ** r["decimals"]),
+            "token_symbol": r["token_symbol"],
+            "direction": r["direction"],
+            "status": r["status"],
+        }
+        for r in rows
+    ]
