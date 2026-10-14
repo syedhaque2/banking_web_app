@@ -11,6 +11,9 @@
 ```python -m pip install -r requirements.txt```  
 ```python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000```
 
+### Deploy the backend to Render
+The repository includes `render.yaml` with a Render web service configuration. In Render, create or update the service using this Blueprint file, with the repository root as the service root directory. Render supplies the `PORT` environment variable; the configured start command binds Uvicorn to `0.0.0.0` on that port. The `/docs` health check confirms the FastAPI service has started.
+
 ### View wallet addresses for transfers
 The send endpoint only transfers to a wallet already registered in the local database, and the recipient must have an account for the selected token. From the `banking_web_app` directory, open the database with:
 ```text
