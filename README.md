@@ -37,7 +37,7 @@ Enter `.quit` to exit SQLite. Use a listed address that has an account for the t
 ```pnpm dev```
 
 ### To run basic unit tests for the API
-Run the following command:
+The API tests create a small temporary SQLite database with two wallets and one token. The temporary database is used only by the tests and is removed afterward; the application's `mock_solana_wallet.db` is not changed. From the `banking_web_app` directory, run:
 ```pytest```
 
 ### Issues that may be faced:

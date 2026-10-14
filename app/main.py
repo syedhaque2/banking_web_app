@@ -17,12 +17,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-selected_address = "h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU"  
+DATABASE_PATH = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
+selected_address = "h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU"
+
+
 # endpoint to get list of tokens in wallet, currently hardcoded to a specific wallet
 @app.get("/tokens")
 def wallet_tokens(selected_address: str = selected_address):
-    database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
-    with closing(sqlite3.connect(database_path)) as connection:
+    with closing(sqlite3.connect(DATABASE_PATH)) as connection:
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         cursor.execute(
@@ -47,8 +49,7 @@ def wallet_tokens(selected_address: str = selected_address):
 # endpoint gets wallet address, currently hardcoded so effectively redundant currently   
 @app.get("/wallet")
 def wallet_address(selected_address: str = selected_address):
-    database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
-    with closing(sqlite3.connect(database_path)) as connection:
+    with closing(sqlite3.connect(DATABASE_PATH)) as connection:
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         cursor.execute(
@@ -66,8 +67,7 @@ def transfer_funds(targetaddress: str, amount: Decimal, token: str):
     if not amount.is_finite() or amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be greater than zero")
     
-    database_path = Path(__file__).resolve().parents[1] / "mock_solana_wallet.db"
-    with closing(sqlite3.connect(database_path)) as connection:
+    with closing(sqlite3.connect(DATABASE_PATH)) as connection:
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         #effectively reverse of the calculation performed in the frontend to get the raw amount of the token to be transferred, and checks if the sender has enough balance
@@ -76,7 +76,7 @@ def transfer_funds(targetaddress: str, amount: Decimal, token: str):
             "FROM token_accounts ta "
             "JOIN tokens t ON t.mint = ta.mint "
             "WHERE ta.wallet_address = ? AND t.symbol = ?",
-            ("h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU", token),
+            (selected_address, token),
         )
 
         sender_account = cursor.fetchone()
@@ -119,7 +119,7 @@ def transfer_funds(targetaddress: str, amount: Decimal, token: str):
             "WHERE wallet_address = ? AND mint = ? AND balance_raw >= ?",
             (
                 amount_raw,
-                "h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU",
+                selected_address,
                 sender_account["mint"],
                 amount_raw,
             ),
