@@ -1,5 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react"
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://banking-web-app-cgvx.onrender.com"
+).replace(/\/+$/, "")
+
 type IconName = "activity" | "arrow-down" | "arrow-up" | "chevron" | "copy" | "grid" | "plus" | "search" | "settings" | "swap" | "wallet" | "x"
 
 type Asset = {
@@ -333,7 +338,7 @@ function TransactionModal({
                     amount: String(amount),
                     token,
                   })
-                  const response = await fetch(`/api/send?${query}`, {
+                  const response = await fetch(`${API_BASE_URL}/api/send?${query}`, {
                     method: "POST",
                   })
                   if (!response.ok) {
@@ -450,7 +455,7 @@ export default function App() {
   const [walletAddress, setWalletAddress] = useState("Loading wallet...")
 
   useEffect(() => {
-    fetch("/api/tokens")
+    fetch(`${API_BASE_URL}/api/tokens`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Wallet API request failed with status ${res.status}.`)
@@ -477,7 +482,7 @@ export default function App() {
         setAssets(defaultAssets)
       })
 
-    fetch("/api/wallet")
+    fetch(`${API_BASE_URL}/api/wallet`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Wallet address request failed with status ${res.status}.`)

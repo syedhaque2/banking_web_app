@@ -13,7 +13,7 @@ app = FastAPI(
 # uses cors to allow requests from frontend running on :5173
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], 
+    allow_origins=["https://syedhaque2.github.io"], 
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -22,7 +22,7 @@ selected_address = "h82pJGF9p7kpzb6eU326EFZf2cDnimbTFVeJtx1qtBmU"
 
 
 # endpoint to get list of tokens in wallet, currently hardcoded to a specific wallet
-@app.get("/tokens")
+@app.get("/api/tokens")
 def wallet_tokens(selected_address: str = selected_address):
     with closing(sqlite3.connect(DATABASE_PATH)) as connection:
         connection.row_factory = sqlite3.Row
@@ -47,7 +47,7 @@ def wallet_tokens(selected_address: str = selected_address):
     ]
 
 # endpoint gets wallet address, currently hardcoded so effectively redundant currently   
-@app.get("/wallet")
+@app.get("/api/wallet")
 def wallet_address(selected_address: str = selected_address):
     with closing(sqlite3.connect(DATABASE_PATH)) as connection:
         connection.row_factory = sqlite3.Row
@@ -62,7 +62,7 @@ def wallet_address(selected_address: str = selected_address):
 
     return {"wallet_address": result["wallet_address"]}
 
-@app.post("/send")
+@app.post("/api/send")
 def transfer_funds(targetaddress: str, amount: Decimal, token: str):
     if not amount.is_finite() or amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be greater than zero")

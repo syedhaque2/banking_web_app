@@ -34,12 +34,11 @@ react(),
     server: {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '5173'),
-      strictPort: true,
+      strictPort: false,
       proxy: {
         '/api': {
-          target: 'http://127.0.0.1:8000',
+          target: 'https://banking-web-app-cgvx.onrender.com',
           changeOrigin: true,
-          rewrite: (requestPath) => requestPath.replace(/^\/api/, ''),
         },
       },
       watch: {

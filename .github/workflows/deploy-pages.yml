@@ -33,6 +33,7 @@ jobs:
         working-directory: frontend
         env:
           VITE_BASE_PATH: /banking_web_app/
+          VITE_API_BASE_URL: https://banking-web-app-cgvx.onrender.com
 
       - uses: actions/upload-pages-artifact@v3
         with:
