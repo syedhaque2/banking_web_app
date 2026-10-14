@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
   const emitSourcemaps = mode === 'development'
 
   return {
-    base: process.env.VITE_BASE_PATH || '/syedhaque2/banking_web_app/origin/deployment-testing/',
+    base: process.env.VITE_BASE_PATH || '/',
     build: {
       sourcemap: emitSourcemaps ? 'inline' : false,
       minify: !emitSourcemaps,

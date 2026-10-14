@@ -2,7 +2,8 @@ name: Deploy frontend to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [deployment-testing]
+  workflow_dispatch:
 
 permissions:
   contents: read
